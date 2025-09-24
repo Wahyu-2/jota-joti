@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Leaderboard 20 Sekolah</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1020;--accent:#2563eb;--muted:#94a3b8}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,#071022 0%,#071626 100%);color:#e6eef8;min-height:100vh;display:flex;flex-direction:column}
+    header{padding:1rem 1.25rem;display:flex;align-items:center;justify-content:center}
+    h1{font-size:1.125rem;margin:0}
+    .container{width:100%;max-width:800px;margin:0 auto;padding:1rem}
+
+    .card{background:rgba(255,255,255,0.03);border-radius:12px;padding:1rem;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .leaderboard-list{list-style:none;padding:0;margin:0}
+    .item{display:flex;align-items:center;justify-content:space-between;padding:0.6rem;border-radius:8px;margin-bottom:0.5rem;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent)}
+    .left{display:flex;align-items:center;gap:0.75rem}
+    .rank{width:36px;height:36px;border-radius:8px;background:linear-gradient(180deg,var(--accent),#1e3a8a);display:flex;align-items:center;justify-content:center;font-weight:700}
+    .school-name{font-weight:600}
+    .score{font-weight:700;font-size:1rem}
+
+    .muted{color:var(--muted);font-size:0.9rem}
+    footer{margin-top:auto;padding:1rem;text-align:center;color:var(--muted);font-size:0.85rem}
+
+    .search{margin-bottom:0.75rem}
+    .empty{padding:1rem;text-align:center;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Leaderboard 20 Sekolah</h1>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+        <div>
+          <div class="muted">Leaderboard</div>
+          <div style="font-size:0.95rem;font-weight:700">Top Schools</div>
+        </div>
+        <div class="muted" id="last-saved">-</div>
+      </div>
+
+      <div class="search">
+        <input id="q" placeholder="Cari nama sekolah..." type="text">
+      </div>
+
+      <ul id="board" class="leaderboard-list"></ul>
+      <div id="empty" class="empty" style="display:none">Belum ada data.</div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© Badang Perkasa Present.</p>
+    <a href="admin.html" style="color:#94a3b8; font-size:0.8rem">Admin</a>
+  </footer>
+
+  <script>
+    // Initial 20 default schools
+    const DEFAULT_SCHOOLS = Array.from({length:20}).map((_,i)=>({id:cryptoRandomId(),name:`Sekolah ${i+1}`,score:0}));
+
+    function cryptoRandomId(){return Math.random().toString(36).slice(2,9)}
+
+    const STORAGE_KEY = 'leaderboard_schools_v1'
+
+    // state
+    let schools = load()
+
+    // elements
+    const board = document.getElementById('board')
+    const q = document.getElementById('q')
+    const lastSaved = document.getElementById('last-saved')
+    const empty = document.getElementById('empty')
+
+    function load(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY)
+        if(!raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SCHOOLS)); return structuredClone(DEFAULT_SCHOOLS) }
+        return JSON.parse(raw)
+      }catch(e){console.error(e); localStorage.removeItem(STORAGE_KEY); localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SCHOOLS)); return structuredClone(DEFAULT_SCHOOLS)}
+    }
+
+    function save(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(schools))
+      lastSaved.textContent = new Date().toLocaleString()
+    }
+
+    function renderBoard(){
+      const term = q.value.trim().toLowerCase()
+      const list = schools.slice().sort((a,b)=>b.score - a.score || a.name.localeCompare(b.name))
+      const filtered = list.filter(s=>s.name.toLowerCase().includes(term))
+      board.innerHTML = ''
+      if(filtered.length===0){empty.style.display='block'} else {empty.style.display='none'}
+      filtered.forEach((s,idx)=>{
+        const li = document.createElement('li'); li.className='item'
+        li.innerHTML = `<div class="left"><div class="rank">${idx+1}</div><div><div class="school-name">${escapeHtml(s.name)}</div></div></div><div class="score">${numberWithSep(s.score)}</div>`
+        board.appendChild(li)
+      })
+    }
+
+    function numberWithSep(n){return String(n)}
+    function escapeHtml(str){return String(str).replace(/[&<>\"]+/g, ch=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[ch]||ch))}
+
+    q.addEventListener('input',renderBoard)
+
+    renderBoard(); lastSaved.textContent = localStorage.getItem(STORAGE_KEY)?new Date().toLocaleString():'-'
+    window.addEventListener('beforeunload',()=>save())
+  </script>
+</body>
+</html>
