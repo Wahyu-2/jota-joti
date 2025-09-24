@@ -5,42 +5,109 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Leaderboard 20 Sekolah</title>
   <style>
-    body { font-family: sans-serif; background:#0f1724; color:#fff; margin:0; }
-    h1 { text-align:center; padding:1rem; }
-    table { width:90%; margin:1rem auto; border-collapse:collapse; }
-    th, td { padding:0.5rem; border-bottom:1px solid #333; text-align:center; }
-    th { background:#2563eb; }
-    tr:nth-child(even){ background:#1e293b; }
-    footer{ text-align:center; padding:1rem; font-size:0.8rem; color:#94a3b8; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 1.8rem;
+      color: #facc15;
+      text-shadow: 0 0 5px rgba(250,204,21,.5);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+    .rank {
+      min-width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .rank.top1 { background: #f59e0b; }
+    .rank.top2 { background: #3b82f6; }
+    .rank.top3 { background: #10b981; }
+    .rank.normal { background: #475569; }
+    .info {
+      flex-grow: 1;
+    }
+    .name {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .score {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+    footer a { color: #94a3b8; text-decoration: none; }
   </style>
 </head>
 <body>
-  <h1>Leaderboard 20 Sekolah</h1>
+  <h1>🏆 Leaderboard 20 Sekolah</h1>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Peringkat</th>
-        <th>Nama Sekolah</th>
-        <th>Skor</th>
-      </tr>
-    </thead>
-    <tbody id="leaderboard-body"></tbody>
-  </table>
+  <div class="grid" id="leaderboard-grid"></div>
 
   <footer>
     © 2025 Leaderboard Sekolah |
-    <a href="admin.html" style="color:#94a3b8">Admin</a>
+    <a href="admin.html">Admin</a>
   </footer>
 
-  <!-- Embed JSON langsung di HTML -->
+  <!-- JSON data embed -->
   <script id="leaderboard-data" type="application/json">
   [
-    {"id":"1","name":"Sekolah testing","score":75},
-    {"id":"2","name":"Sekolah 2","score":88},
-    {"id":"3","name":"Sekolah testing 2","score":92},
-    {"id":"4","name":"Sekolah 4","score":60},
-    {"id":"5","name":"kita testing","score":100}
+    {"id":"1","name":"SMA Negeri 1","score":95},
+    {"id":"2","name":"SMA Negeri 2","score":88},
+    {"id":"3","name":"SMA Negeri 3","score":92},
+    {"id":"4","name":"SMA Negeri 4","score":80},
+    {"id":"5","name":"SMA Negeri 5","score":77},
+    {"id":"6","name":"SMA Negeri 6","score":85},
+    {"id":"7","name":"SMA Negeri 7","score":70},
+    {"id":"8","name":"SMA Negeri 8","score":90},
+    {"id":"9","name":"SMA Negeri 9","score":65},
+    {"id":"10","name":"SMA Negeri 10","score":82},
+    {"id":"11","name":"SMA Negeri 11","score":76},
+    {"id":"12","name":"SMA Negeri 12","score":68},
+    {"id":"13","name":"SMA Negeri 13","score":91},
+    {"id":"14","name":"SMA Negeri 14","score":87},
+    {"id":"15","name":"SMA Negeri 15","score":73},
+    {"id":"16","name":"SMA Negeri 16","score":79},
+    {"id":"17","name":"SMA Negeri 17","score":66},
+    {"id":"18","name":"SMA Negeri 18","score":83},
+    {"id":"19","name":"SMA Negeri 19","score":72},
+    {"id":"20","name":"SMA Negeri 20","score":60}
   ]
   </script>
 
@@ -52,12 +119,24 @@
       // urutkan berdasarkan skor tertinggi
       data.sort((a,b) => b.score - a.score);
 
-      const tbody = document.getElementById("leaderboard-body");
-      tbody.innerHTML = "";
+      const grid = document.getElementById("leaderboard-grid");
+      grid.innerHTML = "";
       data.forEach((s,i)=>{
-        const tr=document.createElement("tr");
-        tr.innerHTML = `<td>${i+1}</td><td>${s.name}</td><td>${s.score}</td>`;
-        tbody.appendChild(tr);
+        let rankClass = "normal";
+        if(i === 0) rankClass = "top1";
+        else if(i === 1) rankClass = "top2";
+        else if(i === 2) rankClass = "top3";
+
+        const card=document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="rank ${rankClass}">${i+1}</div>
+          <div class="info">
+            <div class="name">${s.name}</div>
+            <div class="score">Skor: ${s.score}</div>
+          </div>
+        `;
+        grid.appendChild(card);
       });
     }
     loadLeaderboard();
