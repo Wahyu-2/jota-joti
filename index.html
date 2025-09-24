@@ -48,13 +48,9 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 1rem;
-      color: #fff;
+      font-size: 1.2rem;
+      background: #475569; /* abu default */
     }
-    .rank.top1 { background: #f59e0b; }
-    .rank.top2 { background: #3b82f6; }
-    .rank.top3 { background: #10b981; }
-    .rank.normal { background: #475569; }
     .info {
       flex-grow: 1;
     }
@@ -84,12 +80,12 @@
     © 2025 Pramuka Badang Perkasa Present 
   </footer>
 
-  <!-- YANG HARUS DI UBAH -->
+  <!-- JSON data embed -->
   <script id="leaderboard-data" type="application/json">
   [
-    {"id":"🥇","name":"SMA Negeri 1","score":95},
-    {"id":"🥈","name":"SMA Negeri 2","score":88},
-    {"id":"🥉","name":"SMA Negeri 3","score":92},
+    {"id":"1","name":"SMA Negeri 1","score":95},
+    {"id":"2","name":"SMA Negeri 2","score":88},
+    {"id":"3","name":"SMA Negeri 3","score":92},
     {"id":"4","name":"SMA Negeri 4","score":80},
     {"id":"5","name":"SMA Negeri 5","score":77},
     {"id":"6","name":"SMA Negeri 6","score":85},
@@ -121,15 +117,16 @@
       const grid = document.getElementById("leaderboard-grid");
       grid.innerHTML = "";
       data.forEach((s,i)=>{
-        let rankClass = "normal";
-        if(i === 0) rankClass = "top1";
-        else if(i === 1) rankClass = "top2";
-        else if(i === 2) rankClass = "top3";
+        // Tampilkan 🥇🥈🥉 untuk top 3
+        let rankDisplay = i+1;
+        if(i === 0) rankDisplay = "🥇";
+        else if(i === 1) rankDisplay = "🥈";
+        else if(i === 2) rankDisplay = "🥉";
 
         const card=document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-          <div class="rank ${rankClass}">${i+1}</div>
+          <div class="rank">${rankDisplay}</div>
           <div class="info">
             <div class="name">${s.name}</div>
             <div class="score">Skor: ${s.score}</div>
