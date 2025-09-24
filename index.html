@@ -1,111 +1,66 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Leaderboard 20 Sekolah</title>
   <style>
-    :root{--bg:#0f1724;--card:#0b1020;--accent:#2563eb;--muted:#94a3b8}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,#071022 0%,#071626 100%);color:#e6eef8;min-height:100vh;display:flex;flex-direction:column}
-    header{padding:1rem 1.25rem;display:flex;align-items:center;justify-content:center}
-    h1{font-size:1.125rem;margin:0}
-    .container{width:100%;max-width:800px;margin:0 auto;padding:1rem}
-
-    .card{background:rgba(255,255,255,0.03);border-radius:12px;padding:1rem;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
-    .leaderboard-list{list-style:none;padding:0;margin:0}
-    .item{display:flex;align-items:center;justify-content:space-between;padding:0.6rem;border-radius:8px;margin-bottom:0.5rem;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent)}
-    .left{display:flex;align-items:center;gap:0.75rem}
-    .rank{width:36px;height:36px;border-radius:8px;background:linear-gradient(180deg,var(--accent),#1e3a8a);display:flex;align-items:center;justify-content:center;font-weight:700}
-    .school-name{font-weight:600}
-    .score{font-weight:700;font-size:1rem}
-
-    .muted{color:var(--muted);font-size:0.9rem}
-    footer{margin-top:auto;padding:1rem;text-align:center;color:var(--muted);font-size:0.85rem}
-
-    .search{margin-bottom:0.75rem}
-    .empty{padding:1rem;text-align:center;color:var(--muted)}
+    body { font-family: sans-serif; background:#0f1724; color:#fff; margin:0; }
+    h1 { text-align:center; padding:1rem; }
+    table { width:90%; margin:1rem auto; border-collapse:collapse; }
+    th, td { padding:0.5rem; border-bottom:1px solid #333; text-align:center; }
+    th { background:#2563eb; }
+    tr:nth-child(even){ background:#1e293b; }
+    footer{ text-align:center; padding:1rem; font-size:0.8rem; color:#94a3b8; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Leaderboard 20 Sekolah</h1>
-  </header>
+  <h1>Leaderboard 20 Sekolah</h1>
 
-  <main class="container">
-    <section class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
-        <div>
-          <div class="muted">Leaderboard</div>
-          <div style="font-size:0.95rem;font-weight:700">Top Schools</div>
-        </div>
-        <div class="muted" id="last-saved">-</div>
-      </div>
-
-      <div class="search">
-        <input id="q" placeholder="Cari nama sekolah..." type="text">
-      </div>
-
-      <ul id="board" class="leaderboard-list"></ul>
-      <div id="empty" class="empty" style="display:none">Belum ada data.</div>
-    </section>
-  </main>
+  <table>
+    <thead>
+      <tr>
+        <th>Peringkat</th>
+        <th>Nama Sekolah</th>
+        <th>Skor</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboard-body"></tbody>
+  </table>
 
   <footer>
-    <p>© Badang Perkasa Present.</p>
-    <a href="admin.html" style="color:#94a3b8; font-size:0.8rem">Admin</a>
+    © 2025 Leaderboard Sekolah |
+    <a href="admin.html" style="color:#94a3b8">Admin</a>
   </footer>
 
+  <!-- Embed JSON langsung di HTML -->
+  <script id="leaderboard-data" type="application/json">
+  [
+    {"id":"1","name":"Sekolah 1","score":75},
+    {"id":"2","name":"Sekolah 2","score":88},
+    {"id":"3","name":"Sekolah 3","score":92},
+    {"id":"4","name":"Sekolah 4","score":60},
+    {"id":"5","name":"Sekolah 5","score":100}
+  ]
+  </script>
+
   <script>
-    // Initial 20 default schools
-    const DEFAULT_SCHOOLS = Array.from({length:20}).map((_,i)=>({id:cryptoRandomId(),name:`Sekolah ${i+1}`,score:0}));
+    function loadLeaderboard(){
+      const raw = document.getElementById("leaderboard-data").textContent;
+      let data = JSON.parse(raw);
 
-    function cryptoRandomId(){return Math.random().toString(36).slice(2,9)}
+      // urutkan berdasarkan skor tertinggi
+      data.sort((a,b) => b.score - a.score);
 
-    const STORAGE_KEY = 'leaderboard_schools_v1'
-
-    // state
-    let schools = load()
-
-    // elements
-    const board = document.getElementById('board')
-    const q = document.getElementById('q')
-    const lastSaved = document.getElementById('last-saved')
-    const empty = document.getElementById('empty')
-
-    function load(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY)
-        if(!raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SCHOOLS)); return structuredClone(DEFAULT_SCHOOLS) }
-        return JSON.parse(raw)
-      }catch(e){console.error(e); localStorage.removeItem(STORAGE_KEY); localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SCHOOLS)); return structuredClone(DEFAULT_SCHOOLS)}
+      const tbody = document.getElementById("leaderboard-body");
+      tbody.innerHTML = "";
+      data.forEach((s,i)=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML = `<td>${i+1}</td><td>${s.name}</td><td>${s.score}</td>`;
+        tbody.appendChild(tr);
+      });
     }
-
-    function save(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(schools))
-      lastSaved.textContent = new Date().toLocaleString()
-    }
-
-    function renderBoard(){
-      const term = q.value.trim().toLowerCase()
-      const list = schools.slice().sort((a,b)=>b.score - a.score || a.name.localeCompare(b.name))
-      const filtered = list.filter(s=>s.name.toLowerCase().includes(term))
-      board.innerHTML = ''
-      if(filtered.length===0){empty.style.display='block'} else {empty.style.display='none'}
-      filtered.forEach((s,idx)=>{
-        const li = document.createElement('li'); li.className='item'
-        li.innerHTML = `<div class="left"><div class="rank">${idx+1}</div><div><div class="school-name">${escapeHtml(s.name)}</div></div></div><div class="score">${numberWithSep(s.score)}</div>`
-        board.appendChild(li)
-      })
-    }
-
-    function numberWithSep(n){return String(n)}
-    function escapeHtml(str){return String(str).replace(/[&<>\"]+/g, ch=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[ch]||ch))}
-
-    q.addEventListener('input',renderBoard)
-
-    renderBoard(); lastSaved.textContent = localStorage.getItem(STORAGE_KEY)?new Date().toLocaleString():'-'
-    window.addEventListener('beforeunload',()=>save())
+    loadLeaderboard();
   </script>
 </body>
 </html>
